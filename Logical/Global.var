@@ -1,0 +1,12 @@
+(*Global Vars*)
+VAR
+	gShuttles : ARRAY[0..gNUM_SHUTTLES] OF McAxisType; (*A list of references for all shuttles currently on the trak*)
+	gStartTrak : BOOL;
+	gStopTrak : BOOL;
+	gSpawnShuttle : BOOL;
+END_VAR
+(*
+Constants*)
+VAR CONSTANT
+	gNUM_SHUTTLES : USINT := 40;
+END_VAR

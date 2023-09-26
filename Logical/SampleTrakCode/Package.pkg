@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?AutomationStudio FileVersion="4.9"?>
+<Package xmlns="http://br-automation.co.at/AS/Package">
+  <Objects>
+    <Object Type="File" Description="Types for the example trak program" Private="true">SampleTrakCode.typ</Object>
+    <Object Type="File" Description="Variables for the example trak program" Private="true">SampleTrakCode.var</Object>
+    <Object Type="Program" Language="IEC" Description="The main task for the example trak program">AssemblyCtrl</Object>
+  </Objects>
+</Package>

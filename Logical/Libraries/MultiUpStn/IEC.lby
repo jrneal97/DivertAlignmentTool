@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<?AutomationStudio FileVersion="4.9"?>
+<Library SubType="IEC" xmlns="http://br-automation.co.at/AS/Library">
+  <Files>
+    <File Description="Library data types">MultiUpStn.typ</File>
+    <File Description="Library constants">MultiUpStn.var</File>
+    <File Description="Library functions and function blocks">MultiUpStn.fun</File>
+    <File>MultiUpStn.st</File>
+  </Files>
+  <Dependencies>
+    <Dependency ObjectName="TrkBufLib" />
+  </Dependencies>
+</Library>

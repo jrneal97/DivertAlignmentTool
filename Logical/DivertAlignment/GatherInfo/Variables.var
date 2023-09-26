@@ -1,0 +1,29 @@
+VAR
+	GatherState : GatherStateEnum;
+	AssemblySchematics : AsmSchemType;
+END_VAR
+(*
+FUBs and Vars for getting segments and their information*)
+VAR
+	AsmGetSeg : MC_BR_AsmGetSegment_AcpTrak;
+	SecStop : MC_BR_SecStop_AcpTrak;
+	SegGetInfo : MC_BR_SegGetInfo_AcpTrak;
+	SecGetInfo : MC_BR_SecGetInfo_AcpTrak;
+	CmdGather : BOOL;
+	CmdContinue : BOOL;
+	AsmGetSec : MC_BR_AsmGetSector_AcpTrak;
+END_VAR
+(*
+FUBs and Vars for moving the shuttle around the trak*)
+VAR
+	AsmGetShuttle : MC_BR_AsmGetShuttle_AcpTrak;
+	RoutedMoveAbs : MC_BR_RoutedMoveAbs_AcpTrak;
+	ElasticMoveAbs : MC_BR_ElasticMoveAbs_AcpTrak;
+	ShReadInfo : MC_BR_ShReadInfo_AcpTrak;
+	ShReadSeg : MC_BR_ShReadSegmentInfo_AcpTrak;
+	TestVelocity : REAL := 1.0;
+	DivertIndex : UINT;
+	SectorIndex : UINT;
+	AcknowledgeTimer : TON;
+	AcknowledgeTime : TIME := T#400ms;
+END_VAR

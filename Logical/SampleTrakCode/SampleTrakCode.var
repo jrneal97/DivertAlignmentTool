@@ -1,0 +1,10 @@
+(*
+Array of all segment references*)
+VAR
+	SegmentRefs : ARRAY[0..NUM_SEGMENTS] OF UDINT;
+END_VAR
+(*
+Motion Parameters*)
+VAR
+	MotionParameters : ShMotionParType;
+END_VAR

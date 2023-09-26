@@ -1,0 +1,26 @@
+(*Assembly variables*)
+VAR
+	AsmPowerOn : MC_BR_AsmPowerOn_AcpTrak; (*FUB to power on the assembly*)
+	AsmPowerOff : MC_BR_AsmPowerOff_AcpTrak; (*FUB to power off the assembly*)
+	AsmReadInfo : MC_BR_AsmReadInfo_AcpTrak; (*FUB to read the information of the assembly*)
+	AsmReadStatus : MC_BR_AsmReadStatus_AcpTrak; (*FUB to read the status of the assembly*)
+	AsmGetShuttle : MC_BR_AsmGetShuttle_AcpTrak; (*FUB to get references for all shuttles on the assembly*)
+	AsmStop : MC_BR_AsmStop_AcpTrak; (*FUB to get references for all shuttles on the assembly*)
+	AsmState : AsmStateEnum; (*State of the assembly control task*)
+	SecAddShuttle : MC_BR_SecAddShuttle_AcpTrak;
+END_VAR
+(*
+Shuttle variables*)
+VAR
+	ShCopyUserData : MC_BR_ShCopyUserData_AcpTrak; (*FUB for the initial writing of data during startup*)
+	UserData : UserDataType; (*Structure for the initial writing of data during startup*)
+	RoutedMoveAbs : MC_BR_RoutedMoveAbs_AcpTrak; (*FUB to move the shuttles on the trak to their first station*)
+END_VAR
+(*
+Variables for serial number generation*)
+VAR
+	SN_Prefix : STRING[9] := 'TEST_SN_'; (*The prefix for all generated serial numbers*)
+	SN_Index : USINT := 0; (*The number to be assigned to each shuttle (as a number)*)
+	SN_IndexStr : STRING[4]; (*The number to be assigned to each shuttle (as a string)*)
+	SN_String : STRING[12]; (*The string of the serial number to be assigned to each shuttle*)
+END_VAR

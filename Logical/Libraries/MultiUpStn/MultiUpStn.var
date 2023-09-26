@@ -1,0 +1,8 @@
+VAR CONSTANT
+	MAX_NUM_SLOTS : USINT := 6; (*The most slots a station can have*)
+	SHUTTLE_TOOLING_WIDTH : REAL := 0.1254; (*Width of the shuttle in meters (117.4 mm + 8 mm for collision avoidance)*)
+	REVERSE_MOVE_OFFSET : REAL := 0.001;
+	SHUTTLE_EXTENT_TO_FRONT : LREAL := 0.0587;
+	SHUTTLE_WIDTH : LREAL := 0.1302;
+	NUM_PPM_SAMPLES : USINT := 20;
+END_VAR
