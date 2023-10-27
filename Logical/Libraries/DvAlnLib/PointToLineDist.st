@@ -51,6 +51,7 @@ FUNCTION PointToLineDist
 	// LX2 = L2.Pos.X
 	// LY2 = L2.Pos.Y	
 	
-	PointToLineDist := (ABS( (L2.Pos.X - L1.Pos.X)*(L1.Pos.Y - P.Pos.Y) - (L1.Pos.X - P.Pos.X)*(L2.Pos.Y - L1.Pos.Y) )) / (SQRT( EXPT((L2.Pos.X - L1.Pos.X),2) + EXPT((L2.Pos.Y - L1.Pos.Y),2) ));
+	Distance := (ABS( (L2.Pos.X - L1.Pos.X)*(L1.Pos.Y - P.Pos.Y) - (L1.Pos.X - P.Pos.X)*(L2.Pos.Y - L1.Pos.Y) )) / (SQRT( EXPT((L2.Pos.X - L1.Pos.X),2) + EXPT((L2.Pos.Y - L1.Pos.Y),2) ));
+	PointToLineDist := Distance;
 	
 END_FUNCTION

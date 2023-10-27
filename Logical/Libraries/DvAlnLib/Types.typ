@@ -5,6 +5,8 @@ TYPE
 		Segment : ARRAY[0..NUM_SEGMENTS]OF SegSchemType;
 		Sectors : ARRAY[0..NUM_SECTORS]OF SecSchemType;
 		Diverts : ARRAY[0..NUM_DIVERTS]OF DivSchemType;
+		SvgContent : STRING[20000];
+		SvgTransform : STRING[10000];
 	END_STRUCT;
 	SegSchemType : 	STRUCT 
 		Reference : McSegmentType;

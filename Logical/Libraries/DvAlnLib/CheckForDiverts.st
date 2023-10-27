@@ -9,7 +9,7 @@ FUNCTION CheckForDiverts
 			
 	// Nested for loop. For every mainindex, compare the subindex to it
 	FOR MainIndex:=0 TO NUM_SEGMENTS DO
-		FOR SubIndex:=0 TO NUM_SEGMENTS DO
+		FOR SubIndex:=0 TO NUM_SEGMENTS DO			
 			// If the indeces are equal, then the segment would be compared to itself, skip
 			IF MainIndex = SubIndex THEN
 				(* DO NOTHING *)
@@ -144,7 +144,8 @@ FUNCTION CheckForDiverts
 							IsDivert := TRUE;
 							// Calculate the overlap and midpoints
 							Hypotenuse := PointToPointDist(ReferenceSeg.StartFrame,OtherSeg.StartFrame);
-							Horizontal := SQRT(EXPT(Hypotenuse,2) - EXPT(DIVERT_GAP,2));
+							// The absolute value is needed for when the hypotenuse is shorter than the divert gap by an infinitesimal amount 
+							Horizontal := SQRT(ABS(EXPT(Hypotenuse,2) - EXPT(DIVERT_GAP,2)));
 							IF Horizontal > 660 THEN
 								Overlap := 1320 - Horizontal;
 								ReferenceSegMidpoint := 660 - (Overlap / 2);
@@ -173,7 +174,8 @@ FUNCTION CheckForDiverts
 							IsDivert := TRUE;
 							// Calculate the overlap and midpoints
 							Hypotenuse := PointToPointDist(ReferenceSeg.StartFrame,OtherSeg.StartFrame);
-							Horizontal := SQRT(EXPT(Hypotenuse,2) - EXPT(DIVERT_GAP,2));
+							// The absolute value is needed for when the hypotenuse is shorter than the divert gap by an infinitesimal amount 
+							Horizontal := SQRT(ABS(EXPT(Hypotenuse,2) - EXPT(DIVERT_GAP,2)));
 							IF Horizontal >= 660 THEN
 								Overlap := 105 - (Horizontal - 660);
 								ReferenceSegMidpoint := 660 - (Overlap / 2);
@@ -206,7 +208,8 @@ FUNCTION CheckForDiverts
 							IsDivert := TRUE;
 							// Calculate the overlap and midpoints
 							Hypotenuse := PointToPointDist(ReferenceSeg.EndFrame,OtherSeg.EndFrame);
-							Horizontal := SQRT(EXPT(Hypotenuse,2) - EXPT(DIVERT_GAP,2));
+							// The absolute value is needed for when the hypotenuse is shorter than the divert gap by an infinitesimal amount 
+							Horizontal := SQRT(ABS(EXPT(Hypotenuse,2) - EXPT(DIVERT_GAP,2)));
 							IF Horizontal >= 660 THEN
 								Overlap := 105 - (Horizontal - 660);
 								ReferenceSegMidpoint := (Overlap / 2);
@@ -237,7 +240,8 @@ FUNCTION CheckForDiverts
 							IsDivert := TRUE;
 							// Calculate the overlap and midpoints
 							Hypotenuse := PointToPointDist(ReferenceSeg.StartFrame,OtherSeg.StartFrame);
-							Horizontal := SQRT(EXPT(Hypotenuse,2) - EXPT(DIVERT_GAP,2));
+							// The absolute value is needed for when the hypotenuse is shorter than the divert gap by an infinitesimal amount 
+							Horizontal := SQRT(ABS(EXPT(Hypotenuse,2) - EXPT(DIVERT_GAP,2)));
 							Overlap := Horizontal;
 							ReferenceSegMidpoint := (Overlap / 2);
 							OtherSegMidpoint := (Overlap / 2);
@@ -258,7 +262,8 @@ FUNCTION CheckForDiverts
 							IsDivert := TRUE;
 							// Calculate the overlap and midpoints
 							Hypotenuse := PointToPointDist(ReferenceSeg.StartFrame,OtherSeg.EndFrame);
-							Horizontal := SQRT(EXPT(Hypotenuse,2) - EXPT(DIVERT_GAP,2));
+							// The absolute value is needed for when the hypotenuse is shorter than the divert gap by an infinitesimal amount 
+							Horizontal := SQRT(ABS(EXPT(Hypotenuse,2) - EXPT(DIVERT_GAP,2)));
 							Overlap := 105 - Horizontal;
 							ReferenceSegMidpoint := (Overlap / 2);
 							OtherSegMidpoint := 450 - (Overlap / 2);
@@ -279,7 +284,8 @@ FUNCTION CheckForDiverts
 							IsDivert := TRUE;
 							// Calculate the overlap and midpoints
 							Hypotenuse := PointToPointDist(ReferenceSeg.EndFrame,OtherSeg.EndFrame);
-							Horizontal := SQRT(EXPT(Hypotenuse,2) - EXPT(DIVERT_GAP,2));
+							// The absolute value is needed for when the hypotenuse is shorter than the divert gap by an infinitesimal amount 
+							Horizontal := SQRT(ABS(EXPT(Hypotenuse,2) - EXPT(DIVERT_GAP,2)));
 							Overlap := Horizontal;
 							ReferenceSegMidpoint := 450 - (Overlap / 2);
 							OtherSegMidpoint := 450 - (Overlap / 2);

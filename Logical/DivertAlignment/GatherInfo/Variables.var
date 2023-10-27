@@ -6,7 +6,7 @@ END_VAR
 FUBs and Vars for getting segments and their information*)
 VAR
 	AsmGetSeg : MC_BR_AsmGetSegment_AcpTrak;
-	SecStop : MC_BR_SecStop_AcpTrak;
+	AsmStop : MC_BR_AsmStop_AcpTrak;
 	SegGetInfo : MC_BR_SegGetInfo_AcpTrak;
 	SecGetInfo : MC_BR_SecGetInfo_AcpTrak;
 	CmdGather : BOOL;
@@ -21,9 +21,53 @@ VAR
 	ElasticMoveAbs : MC_BR_ElasticMoveAbs_AcpTrak;
 	ShReadInfo : MC_BR_ShReadInfo_AcpTrak;
 	ShReadSeg : MC_BR_ShReadSegmentInfo_AcpTrak;
+	AxisReference : McAxisType;
 	TestVelocity : REAL := 1.0;
 	DivertIndex : UINT;
+	SegmentIndex : UINT;
 	SectorIndex : UINT;
 	AcknowledgeTimer : TON;
 	AcknowledgeTime : TIME := T#400ms;
+	MovingToSec : BOOL;
+	MovingOnSec : BOOL;
+	MoreDivertsToFind : BOOL;
+	ErrorMessage : STRING[100];
 END_VAR
+(*
+Vars for drawing the segments in mappView*)
+VAR
+	NewLine : STRING[300];
+	StartX : DrawingNumberType;
+	StartY : DrawingNumberType;
+	EndX : DrawingNumberType;
+	EndY : DrawingNumberType;
+	MinX : DrawingNumberType;
+	MinY : DrawingNumberType;
+	MaxX : DrawingNumberType;
+	MaxY : DrawingNumberType;
+	ViewWidth : DrawingNumberType;
+	ViewHeight : DrawingNumberType;
+	BorderWidth : USINT := 100;
+END_VAR
+(*
+Vars for drawing the diverts in mappView*)
+VAR
+	RefSegID : UINT;
+	RectX : DrawingNumberType;
+	RectY : DrawingNumberType;
+	RectWidth : DrawingNumberType;
+	RectHeight : DrawingNumberType;
+	RectRotAngle : DrawingNumberType;
+	RectRotX : DrawingNumberType;
+	RectRotY : DrawingNumberType;
+END_VAR
+(*
+
+
+
+
+
+
+
+
+*)

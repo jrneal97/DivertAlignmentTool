@@ -17,6 +17,7 @@ FUNCTION PointToPointDist
 	// X2 = P2.Pos.X
 	// Y2 = P2.Pos.Y
 	
-	PointToPointDist := SQRT( EXPT((P2.Pos.X - P1.Pos.X),2) + EXPT((P2.Pos.Y - P1.Pos.Y),2) );
+	Distance := SQRT( EXPT((P2.Pos.X - P1.Pos.X),2) + EXPT((P2.Pos.Y - P1.Pos.Y),2) );
+	PointToPointDist := Distance;
 	
 END_FUNCTION

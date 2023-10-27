@@ -16,7 +16,13 @@
           <Variable Name="Deceleration" />
         </Variable>
       </GlobalVariables>
-      <Task Name="GatherInfo" />
+      <Task Name="GatherInfo">
+        <Variable Name="AssemblySchematics" RecursiveEnable="2">
+          <Variable Name="Diverts" RecursiveEnable="2" />
+          <Variable Name="SvgContent" />
+          <Variable Name="SvgTransform" />
+        </Variable>
+      </Task>
     </Module>
   </DefaultView>
 </OpcUaSource>
