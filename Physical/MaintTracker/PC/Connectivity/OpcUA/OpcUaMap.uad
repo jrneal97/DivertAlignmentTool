@@ -22,6 +22,7 @@
           <Variable Name="SvgContent" />
           <Variable Name="SvgTransform" />
         </Variable>
+        <Variable Name="CmdGather" />
       </Task>
     </Module>
   </DefaultView>

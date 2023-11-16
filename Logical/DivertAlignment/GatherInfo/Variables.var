@@ -53,6 +53,7 @@ END_VAR
 Vars for drawing the diverts in mappView*)
 VAR
 	RefSegID : UINT;
+	RectName : DrawingNumberType;
 	RectX : DrawingNumberType;
 	RectY : DrawingNumberType;
 	RectWidth : DrawingNumberType;

@@ -155,6 +155,8 @@ PROGRAM _CYCLIC
 					// The points are truncated to int. Values being off by less than a mm will not visibly make a difference, but it saves string character space
 					// Y values are inverted because the Y axis is flipped in the svg coordinate system
 					RefSegID := AssemblySchematics.Diverts[DivertIndex].SegID[0];
+					// The divert index will be used as the name for the rectangle
+					RectName.Value := DivertIndex;
 					// Decide the segment type
 					CASE AssemblySchematics.Segment[RefSegID].Type OF
 						mcACPTRAK_SEG_STR_660,mcACPTRAK_SEG_STR_105_TO_CIRC:
@@ -199,6 +201,7 @@ PROGRAM _CYCLIC
 						
 					END_CASE
 					// Convert the values to strings
+					RectName.String := INT_TO_STRING(RectName.Value);
 					RectX.String := INT_TO_STRING(RectX.Value);
 					RectY.String := INT_TO_STRING(RectY.Value);
 					RectWidth.String := INT_TO_STRING(RectWidth.Value);
@@ -209,7 +212,9 @@ PROGRAM _CYCLIC
 					// Draw the rectangle with the following syntax
 					// <rect x="RectX" y="RectY" width="RectWidth" height="RectHeight" fill="rgb(255,0,0)" transform="rotate(RectRotAngle RectRotX RectRotY)"/>
 					brsmemset(ADR(NewLine),0,SIZEOF(NewLine));
-					NewLine := '<rect x="';
+					NewLine := '<rect id="Div_';
+					NewLine := CONCAT(NewLine,RectName.String);
+					NewLine := CONCAT(NewLine,'" x="');
 					NewLine := CONCAT(NewLine,RectX.String);
 					NewLine := CONCAT(NewLine,'" y="');
 					NewLine := CONCAT(NewLine,RectY.String);
@@ -217,7 +222,7 @@ PROGRAM _CYCLIC
 					NewLine := CONCAT(NewLine,RectWidth.String);
 					NewLine := CONCAT(NewLine,'" height="');
 					NewLine := CONCAT(NewLine,RectHeight.String);
-					NewLine := CONCAT(NewLine,'" fill="rgb(255,153,0)" transform="rotate(');
+					NewLine := CONCAT(NewLine,'" fill="rgb(33,118,174)" transform="rotate(');
 					NewLine := CONCAT(NewLine,RectRotAngle.String);
 					NewLine := CONCAT(NewLine,' ');
 					NewLine := CONCAT(NewLine,RectRotX.String);
@@ -297,6 +302,15 @@ PROGRAM _CYCLIC
 							ElasticMoveAbs.Execute := FALSE;
 							RoutedMoveAbs.Execute := FALSE;
 							AsmStop.Execute := TRUE;
+							// Set the transform such that the divert turns orange immediately
+							RectName.Value := DivertIndex;
+							RectName.String := INT_TO_STRING(RectName.Value);
+							brsmemset(ADR(AssemblySchematics.SvgTransform),0,SIZEOF(AssemblySchematics.SvgTransform));
+							brsmemset(ADR(NewLine),0,SIZEOF(NewLine));
+							NewLine := '[{"select":"#Div_';
+							NewLine := CONCAT(NewLine,RectName.String);
+							NewLine := CONCAT(NewLine,'","fill":1,"duration":0}]');
+							brsstrcat(ADR(AssemblySchematics.SvgTransform),ADR(NewLine));
 							GatherState := GATHER_ACKNOWLEDGE;
 							EXIT;
 						END_IF
@@ -309,6 +323,15 @@ PROGRAM _CYCLIC
 							ElasticMoveAbs.Execute := FALSE;
 							RoutedMoveAbs.Execute := FALSE;
 							AsmStop.Execute := TRUE;
+							// Set the transform such that the divert turns orange immediately
+							RectName.Value := DivertIndex;
+							RectName.String := INT_TO_STRING(RectName.Value);
+							brsmemset(ADR(AssemblySchematics.SvgTransform),0,SIZEOF(AssemblySchematics.SvgTransform));
+							brsmemset(ADR(NewLine),0,SIZEOF(NewLine));
+							NewLine := '[{"select":"#Div_';
+							NewLine := CONCAT(NewLine,RectName.String);
+							NewLine := CONCAT(NewLine,'","fill":1,"duration":0}]');
+							brsstrcat(ADR(AssemblySchematics.SvgTransform),ADR(NewLine));
 							GatherState := GATHER_ACKNOWLEDGE;
 							EXIT;
 						END_IF
