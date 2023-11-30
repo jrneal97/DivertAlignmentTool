@@ -318,7 +318,7 @@
       </Group>
       <Group ID="CollisionAvoidance">
         <Selector ID="Strategy" Value="Constant" />
-        <Selector ID="Exclusion" Value="NotUsed" />
+        <Selector ID="Exclusion" Value="VirtualShuttles" />
         <Group ID="MaximumModelDimensions">
           <Group ID="Length">
             <Property ID="ExtentToFront" Value="0.03" />

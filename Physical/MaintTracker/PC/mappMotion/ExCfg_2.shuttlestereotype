@@ -7,7 +7,7 @@
     <Selector ID="MovementLimits" Value="Internal">
       <Property ID="VelocityIsReadOnly" Value="0" />
       <Selector ID="Velocity">
-        <Property ID="Velocity" Value="4.0" />
+        <Property ID="Velocity" Value="5.5" />
       </Selector>
       <Property ID="AccelerationIsReadOnly" Value="0" />
       <Selector ID="Acceleration">

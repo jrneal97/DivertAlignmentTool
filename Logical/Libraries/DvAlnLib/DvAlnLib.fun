@@ -42,3 +42,53 @@ FUNCTION PointToPointDist : LREAL
 		Distance : LREAL; (*The distance between the two points*)
 	END_VAR
 END_FUNCTION
+
+FUNCTION MeasureDivert : BOOL
+	VAR_INPUT
+		Schematic : REFERENCE TO AsmSchemType;
+		ShSegInfo : McAcpTrakShSegmentInfoType;
+		DivertIndex : UINT;
+	END_VAR
+	VAR
+		SegMeasIndex : USINT;
+	END_VAR
+END_FUNCTION
+
+FUNCTION_BLOCK DvAlnGetSegments
+	VAR_INPUT
+		Schematic : REFERENCE TO AsmSchemType;
+		Execute : BOOL;
+	END_VAR
+	VAR_OUTPUT
+		Done : BOOL;
+		Error : BOOL;
+	END_VAR
+	VAR
+		Internal : DvAlnGetSegInternalType;
+	END_VAR
+END_FUNCTION_BLOCK
+
+FUNCTION_BLOCK DvAlnGetSectors
+	VAR_INPUT
+		Schematic : REFERENCE TO AsmSchemType;
+		Execute : BOOL;
+	END_VAR
+	VAR_OUTPUT
+		Done : BOOL;
+		Error : BOOL;
+	END_VAR
+	VAR
+		Internal : DvAlnGetSecInternalType;
+	END_VAR
+END_FUNCTION_BLOCK
+
+FUNCTION WriteDivertTransform : USINT
+	VAR_INPUT
+		Schematic : REFERENCE TO AsmSchemType;
+	END_VAR
+	VAR
+		i : UINT;
+		RectName : DrawingNumberType;
+		NewLine : STRING[300];
+	END_VAR
+END_FUNCTION

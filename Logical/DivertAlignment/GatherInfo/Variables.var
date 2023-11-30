@@ -5,24 +5,27 @@ END_VAR
 (*
 FUBs and Vars for getting segments and their information*)
 VAR
-	AsmGetSeg : MC_BR_AsmGetSegment_AcpTrak;
 	AsmStop : MC_BR_AsmStop_AcpTrak;
+	AsmDeleteVirtualSh : MC_BR_AsmDeleteShuttle_AcpTrak;
 	SegGetInfo : MC_BR_SegGetInfo_AcpTrak;
 	SecGetInfo : MC_BR_SecGetInfo_AcpTrak;
 	CmdGather : BOOL;
 	CmdContinue : BOOL;
-	AsmGetSec : MC_BR_AsmGetSector_AcpTrak;
+	GatherSegs : DvAlnGetSegments;
+	GatherSecs : DvAlnGetSectors;
 END_VAR
 (*
 FUBs and Vars for moving the shuttle around the trak*)
 VAR
-	AsmGetShuttle : MC_BR_AsmGetShuttle_AcpTrak;
+	AsmGetShuttleSel : MC_BR_AsmGetShuttleSel_AcpTrak;
 	RoutedMoveAbs : MC_BR_RoutedMoveAbs_AcpTrak;
 	ElasticMoveAbs : MC_BR_ElasticMoveAbs_AcpTrak;
 	ShReadInfo : MC_BR_ShReadInfo_AcpTrak;
 	ShReadSeg : MC_BR_ShReadSegmentInfo_AcpTrak;
+	VirtualElasticMoveAbs : ARRAY[0..NUM_SECTORS] OF MC_BR_ElasticMoveAbs_AcpTrak;
+	VirtualShReadInfo : ARRAY[0..NUM_SECTORS] OF MC_BR_ShReadInfo_AcpTrak;
+	VirtualIndex : UINT;
 	AxisReference : McAxisType;
-	TestVelocity : REAL := 1.0;
 	DivertIndex : UINT;
 	SegmentIndex : UINT;
 	SectorIndex : UINT;
@@ -30,8 +33,11 @@ VAR
 	AcknowledgeTime : TIME := T#400ms;
 	MovingToSec : BOOL;
 	MovingOnSec : BOOL;
+	VirtualShuttlesInMotion : BOOL;
 	MoreDivertsToFind : BOOL;
 	ErrorMessage : STRING[100];
+	VirtualMotionPars : MotionParsType;
+	PhysicalMotionPars : MotionParsType;
 END_VAR
 (*
 Vars for drawing the segments in mappView*)
@@ -41,13 +47,6 @@ VAR
 	StartY : DrawingNumberType;
 	EndX : DrawingNumberType;
 	EndY : DrawingNumberType;
-	MinX : DrawingNumberType;
-	MinY : DrawingNumberType;
-	MaxX : DrawingNumberType;
-	MaxY : DrawingNumberType;
-	ViewWidth : DrawingNumberType;
-	ViewHeight : DrawingNumberType;
-	BorderWidth : USINT := 100;
 END_VAR
 (*
 Vars for drawing the diverts in mappView*)
@@ -61,6 +60,12 @@ VAR
 	RectRotAngle : DrawingNumberType;
 	RectRotX : DrawingNumberType;
 	RectRotY : DrawingNumberType;
+END_VAR
+(*
+FUBs and Vars for the virtual shuttles*)
+VAR
+	VirtualShuttleList : ARRAY[0..NUM_SECTORS] OF McAxisType;
+	SpawnVirtualShuttle : MC_BR_SecAddShuttle_AcpTrak;
 END_VAR
 (*
 

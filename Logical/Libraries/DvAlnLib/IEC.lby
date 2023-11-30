@@ -8,5 +8,9 @@
     <File>PointToPointDist.st</File>
     <File>PointToLineDist.st</File>
     <File>CheckForDiverts.st</File>
+    <File>MeasureDivert.st</File>
+    <File>DvAlnGetSegments.st</File>
+    <File>DvAlnGetSectors.st</File>
+    <File>WriteDivertTransform.st</File>
   </Files>
 </Library>

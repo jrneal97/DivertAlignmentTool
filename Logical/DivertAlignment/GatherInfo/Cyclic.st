@@ -3,93 +3,23 @@ PROGRAM _CYCLIC
 	(* Insert code here *)
 	CASE GatherState OF
 		GATHER_IDLE:
-			// Wait for command, then clear the schematic structure and enable the AsmGetSeg and AsmGetSec FUBs
+			// Wait for command, then clear the schematic structure and pass in the assembly reference
 			IF CmdGather THEN
 				brsmemset(ADR(AssemblySchematics),0,SIZEOF(AssemblySchematics));
-				AsmGetSeg.Enable := TRUE;
-				AsmGetSec.Enable := TRUE;
+				AssemblySchematics.AsmReference := gAssembly_1;
+				GatherSegs.Schematic := ADR(AssemblySchematics);
+				GatherSegs.Execute := TRUE;
+				GatherSecs.Schematic := ADR(AssemblySchematics);
+				GatherSecs.Execute := TRUE;
 				GatherState := GATHER_SEG_AND_SEC;
-				MinX.Value := 0;
-				MinY.Value := 0;
-				MaxX.Value := 0;
-				MaxY.Value := 0;
 			END_IF
 				
 		GATHER_SEG_AND_SEC:
-			// Wait for validity
-			IF AsmGetSeg.Valid AND AsmGetSec.Valid THEN
-				// Clear the "next" signals
-				AsmGetSeg.Next := FALSE;
-				AsmGetSec.Next := FALSE;
-				// Plug the segment and sectors into the respective get infor FUBs
-				SegGetInfo.Segment := ADR(AsmGetSeg.Segment);
-				SecGetInfo.Sector := ADR(AsmGetSec.Sector);
-				// Execute the FUBs
-				SegGetInfo.Execute := TRUE;
-				SecGetInfo.Execute := TRUE;
-				GatherState := GATHER_SEG_AND_SEC_INFO;
-			END_IF
-			
-		GATHER_SEG_AND_SEC_INFO:
-			// Wait for the SegGetInfo and SecGetInfo FUBs to finish
-			IF SegGetInfo.Done AND SecGetInfo.Done THEN 
-				// Record the segment information (use the segment ID as the index)
-				AssemblySchematics.Segment[SegGetInfo.SegmentInfo.ID].Reference := AsmGetSeg.Segment;
-				AssemblySchematics.Segment[SegGetInfo.SegmentInfo.ID].Name := SegGetInfo.SegmentInfo.Name;
-				AssemblySchematics.Segment[SegGetInfo.SegmentInfo.ID].ID := SegGetInfo.SegmentInfo.ID;
-				AssemblySchematics.Segment[SegGetInfo.SegmentInfo.ID].Type := SegGetInfo.SegmentInfo.Type;
-				AssemblySchematics.Segment[SegGetInfo.SegmentInfo.ID].StartFrame := SegGetInfo.SegmentInfo.StartFrame;
-				AssemblySchematics.Segment[SegGetInfo.SegmentInfo.ID].EndFrame := SegGetInfo.SegmentInfo.EndFrame;
-				// Record the min and max values for the X values
-				IF (SegGetInfo.SegmentInfo.StartFrame.Pos.X - BorderWidth) < (MinX.Value) THEN
-					MinX.Value := TRUNC(SegGetInfo.SegmentInfo.StartFrame.Pos.X - BorderWidth);
-				END_IF
-				IF (SegGetInfo.SegmentInfo.EndFrame.Pos.X - BorderWidth) < (MinX.Value) THEN
-					MinX.Value := TRUNC(SegGetInfo.SegmentInfo.EndFrame.Pos.X - BorderWidth);
-				END_IF
-				IF (SegGetInfo.SegmentInfo.StartFrame.Pos.X + BorderWidth) > (MaxX.Value) THEN
-					MaxX.Value := TRUNC(SegGetInfo.SegmentInfo.StartFrame.Pos.X + BorderWidth);
-				END_IF
-				IF (SegGetInfo.SegmentInfo.EndFrame.Pos.X + BorderWidth) > (MaxX.Value) THEN
-					MaxX.Value := TRUNC(SegGetInfo.SegmentInfo.EndFrame.Pos.X + BorderWidth);
-				END_IF
-				// Record the min and max values for the Y values
-				IF (SegGetInfo.SegmentInfo.StartFrame.Pos.Y - BorderWidth) < (MinY.Value) THEN
-					MinY.Value := TRUNC(SegGetInfo.SegmentInfo.StartFrame.Pos.Y - BorderWidth);
-				END_IF
-				IF (SegGetInfo.SegmentInfo.EndFrame.Pos.Y - BorderWidth) < (MinY.Value) THEN
-					MinY.Value := TRUNC(SegGetInfo.SegmentInfo.EndFrame.Pos.Y - BorderWidth);
-				END_IF
-				IF (SegGetInfo.SegmentInfo.StartFrame.Pos.Y + BorderWidth) > (MaxY.Value) THEN
-					MaxY.Value := TRUNC(SegGetInfo.SegmentInfo.StartFrame.Pos.Y + BorderWidth);
-				END_IF
-				IF (SegGetInfo.SegmentInfo.EndFrame.Pos.Y + BorderWidth) > (MaxY.Value) THEN
-					MaxY.Value := TRUNC(SegGetInfo.SegmentInfo.EndFrame.Pos.Y + BorderWidth);
-				END_IF
-				// Record the sector information (store them in the order they are found)
-				AssemblySchematics.Sectors[AsmGetSec.TotalCount - AsmGetSec.RemainingCount - 1].Reference := AsmGetSec.Sector;
-				AssemblySchematics.Sectors[AsmGetSec.TotalCount - AsmGetSec.RemainingCount - 1].Name := SecGetInfo.SectorInfo.Name;				
-				AssemblySchematics.Sectors[AsmGetSec.TotalCount - AsmGetSec.RemainingCount - 1].Length := SecGetInfo.SectorInfo.Length;
-				AssemblySchematics.Sectors[AsmGetSec.TotalCount - AsmGetSec.RemainingCount - 1].Type := SecGetInfo.SectorInfo.Type;
-				// Reset the execute commands
-				SegGetInfo.Execute := FALSE;
-				SecGetInfo.Execute := FALSE;
-				// If there are more segments, iterate
-				IF AsmGetSeg.RemainingCount > 0 THEN
-					AsmGetSeg.Next := TRUE;
-					GatherState := GATHER_SEG_AND_SEC;
-				END_IF
-				// If there are more sectors, iterate
-				IF AsmGetSec.RemainingCount > 0 THEN
-					AsmGetSec.Next := TRUE;
-					GatherState := GATHER_SEG_AND_SEC;
-				END_IF
-				// If there are no more segments and no more sectors, the task is done
-				IF AsmGetSeg.RemainingCount = 0 AND AsmGetSec.RemainingCount = 0 THEN
-					AsmGetSeg.Enable := FALSE;
-					AsmGetSec.Enable := FALSE;
-					GatherState := GATHER_DIVERTS;
-				END_IF
+			// Wait for the FUBs to finish
+			IF GatherSegs.Done AND GatherSecs.Done THEN
+				GatherSegs.Execute := FALSE;
+				GatherSecs.Execute := FALSE;
+				GatherState := GATHER_DIVERTS;
 			END_IF
 			
 		GATHER_DIVERTS:
@@ -99,24 +29,24 @@ PROGRAM _CYCLIC
 			
 		GATHER_DRAW_SEGMENTS:
 			// Determine the width and height and then convert the INTs to strings
-			ViewWidth.Value := MaxX.Value - MinX.Value;
-			ViewHeight.Value := MaxY.Value - MinY.Value;
-			ViewWidth.String := INT_TO_STRING(ViewWidth.Value);
-			ViewHeight.String := INT_TO_STRING(ViewHeight.Value);
+			AssemblySchematics.Svg.Viewbox.Width.Value := AssemblySchematics.Svg.Viewbox.MaxX.Value - AssemblySchematics.Svg.Viewbox.MinX.Value;
+			AssemblySchematics.Svg.Viewbox.Height.Value := AssemblySchematics.Svg.Viewbox.MaxY.Value - AssemblySchematics.Svg.Viewbox.MinY.Value;
+			AssemblySchematics.Svg.Viewbox.Width.String := INT_TO_STRING(AssemblySchematics.Svg.Viewbox.Width.Value);
+			AssemblySchematics.Svg.Viewbox.Height.String := INT_TO_STRING(AssemblySchematics.Svg.Viewbox.Height.Value);
 			// The inverse of max Y is used as the min Y because the Y axis is flipped in the svg coordinate system
-			MinX.String := INT_TO_STRING(MinX.Value);
-			MinY.String := INT_TO_STRING(-1 * MaxY.Value);
+			AssemblySchematics.Svg.Viewbox.MinX.String := INT_TO_STRING(AssemblySchematics.Svg.Viewbox.MinX.Value);
+			AssemblySchematics.Svg.Viewbox.MinY.String := INT_TO_STRING(-1 * AssemblySchematics.Svg.Viewbox.MaxY.Value);
 			// Clear the svg and write the viewbox pars (minx miny width height)
-			brsmemset(ADR(AssemblySchematics.SvgContent),0,SIZEOF(AssemblySchematics.SvgContent));
-			AssemblySchematics.SvgContent := '<svg viewbox="';
-			AssemblySchematics.SvgContent := CONCAT(AssemblySchematics.SvgContent,MinX.String);
-			AssemblySchematics.SvgContent := CONCAT(AssemblySchematics.SvgContent,' ');
-			AssemblySchematics.SvgContent := CONCAT(AssemblySchematics.SvgContent,MinY.String);
-			AssemblySchematics.SvgContent := CONCAT(AssemblySchematics.SvgContent,' ');
-			AssemblySchematics.SvgContent := CONCAT(AssemblySchematics.SvgContent,ViewWidth.String);
-			AssemblySchematics.SvgContent := CONCAT(AssemblySchematics.SvgContent,' ');
-			AssemblySchematics.SvgContent := CONCAT(AssemblySchematics.SvgContent,ViewHeight.String);
-			AssemblySchematics.SvgContent := CONCAT(AssemblySchematics.SvgContent,'">');
+			brsmemset(ADR(AssemblySchematics.Svg.Content),0,SIZEOF(AssemblySchematics.Svg.Content));
+			AssemblySchematics.Svg.Content := '<svg viewbox="';
+			AssemblySchematics.Svg.Content := CONCAT(AssemblySchematics.Svg.Content,AssemblySchematics.Svg.Viewbox.MinX.String);
+			AssemblySchematics.Svg.Content := CONCAT(AssemblySchematics.Svg.Content,' ');
+			AssemblySchematics.Svg.Content := CONCAT(AssemblySchematics.Svg.Content,AssemblySchematics.Svg.Viewbox.MinY.String);
+			AssemblySchematics.Svg.Content := CONCAT(AssemblySchematics.Svg.Content,' ');
+			AssemblySchematics.Svg.Content := CONCAT(AssemblySchematics.Svg.Content,AssemblySchematics.Svg.Viewbox.Width.String);
+			AssemblySchematics.Svg.Content := CONCAT(AssemblySchematics.Svg.Content,' ');
+			AssemblySchematics.Svg.Content := CONCAT(AssemblySchematics.Svg.Content,AssemblySchematics.Svg.Viewbox.Height.String);
+			AssemblySchematics.Svg.Content := CONCAT(AssemblySchematics.Svg.Content,'">');
 			FOR SegmentIndex:=0 TO NUM_SEGMENTS DO
 				// Only draw if the entry is not empty
 				IF NOT (AssemblySchematics.Segment[SegmentIndex].Name = '') THEN
@@ -142,7 +72,7 @@ PROGRAM _CYCLIC
 					NewLine := CONCAT(NewLine,'" y2="');
 					NewLine := CONCAT(NewLine,EndY.String);
 					NewLine := CONCAT(NewLine,'" style="stroke:rgb(0,0,0);stroke-width:10"/>');
-					brsstrcat(ADR(AssemblySchematics.SvgContent),ADR(NewLine));
+					brsstrcat(ADR(AssemblySchematics.Svg.Content),ADR(NewLine));
 				END_IF
 			END_FOR
 			GatherState := GATHER_DRAW_DIVERTS;
@@ -222,28 +152,124 @@ PROGRAM _CYCLIC
 					NewLine := CONCAT(NewLine,RectWidth.String);
 					NewLine := CONCAT(NewLine,'" height="');
 					NewLine := CONCAT(NewLine,RectHeight.String);
-					NewLine := CONCAT(NewLine,'" fill="rgb(33,118,174)" transform="rotate(');
+					NewLine := CONCAT(NewLine,'" fill="rgb(198,198,198)" transform="rotate(');
 					NewLine := CONCAT(NewLine,RectRotAngle.String);
 					NewLine := CONCAT(NewLine,' ');
 					NewLine := CONCAT(NewLine,RectRotX.String);
 					NewLine := CONCAT(NewLine,' ');
 					NewLine := CONCAT(NewLine,RectRotY.String);
 					NewLine := CONCAT(NewLine,')"/>');
-					brsstrcat(ADR(AssemblySchematics.SvgContent),ADR(NewLine));					
+					brsstrcat(ADR(AssemblySchematics.Svg.Content),ADR(NewLine));					
 				END_IF
 			END_FOR
 			// Write the footer line
 			brsmemset(ADR(NewLine),0,SIZEOF(NewLine));
 			NewLine := '</svg>';
-			brsstrcat(ADR(AssemblySchematics.SvgContent),ADR(NewLine));
-			GatherState := GATHER_SHUTTLE;
+			brsstrcat(ADR(AssemblySchematics.Svg.Content),ADR(NewLine));
+			GatherState := GATHER_MOVE_VIRTUALS;
+		
+		GATHER_MOVE_VIRTUALS:
+			// Interate through all sectors and set the virtual shuttles in motion to the end of their sectors
+			FOR VirtualIndex:=0 TO NUM_SECTORS DO
+				// Only operate on indeces with sector references in them
+				IF AssemblySchematics.Sectors[VirtualIndex].Reference.controlif <> 0 THEN
+					VirtualShReadInfo[VirtualIndex].Axis := ADR(AssemblySchematics.VirtualShuttles[VirtualIndex]);
+					VirtualShReadInfo[VirtualIndex].Enable := TRUE;
+					VirtualElasticMoveAbs[VirtualIndex].Axis := ADR(AssemblySchematics.VirtualShuttles[VirtualIndex]);
+					VirtualElasticMoveAbs[VirtualIndex].Position := AssemblySchematics.Sectors[VirtualIndex].Length;
+					VirtualElasticMoveAbs[VirtualIndex].Velocity := VirtualMotionPars.Velocity;
+					VirtualElasticMoveAbs[VirtualIndex].Acceleration := VirtualMotionPars.Accel;
+					VirtualElasticMoveAbs[VirtualIndex].Deceleration := VirtualMotionPars.Decel;
+					VirtualElasticMoveAbs[VirtualIndex].Execute := TRUE;
+				END_IF
+			END_FOR
+			GatherState := GATHER_SCAN_SECTORS;
+			
+		GATHER_SCAN_SECTORS:
+			// Check every virtual shuttle
+			FOR VirtualIndex:=0 TO NUM_SECTORS DO
+				// Only check shuttles still in motion
+				IF VirtualElasticMoveAbs[VirtualIndex].Execute AND NOT VirtualElasticMoveAbs[VirtualIndex].Done THEN
+					// Constantly compare the current seg position to the divert seg midpoints. Only check divert entries that aren't empty and haven't been found yet
+					FOR DivertIndex:=0 TO NUM_DIVERTS DO
+						IF (AssemblySchematics.Diverts[DivertIndex].Overlap <> 0) AND NOT AssemblySchematics.Diverts[DivertIndex].Found THEN
+							// If the shuttle is on the same segment as the divert's first segment then compare the positions
+							IF (VirtualShReadInfo[VirtualIndex].ShuttleInfo.CurrentValues.SegmentPosition.Name = AssemblySchematics.Diverts[DivertIndex].SegName[0]) THEN
+								// If the shuttles current position on the segment is within DIV_MIDPOINT_TOLERANCE of the midpoint then stop and take the measurement
+								IF (VirtualShReadInfo[VirtualIndex].ShuttleInfo.CurrentValues.SegmentPosition.Position > AssemblySchematics.Diverts[DivertIndex].DivertMid[0] - DIV_MIDPOINT_TOLERANCE) AND
+									(VirtualShReadInfo[VirtualIndex].ShuttleInfo.CurrentValues.SegmentPosition.Position < AssemblySchematics.Diverts[DivertIndex].DivertMid[0] + DIV_MIDPOINT_TOLERANCE) THEN
+									// Record the sector and position for the divert
+									AssemblySchematics.Diverts[DivertIndex].Found := TRUE;
+									AssemblySchematics.Diverts[DivertIndex].SecRef[0] := VirtualShReadInfo[VirtualIndex].ShuttleInfo.CurrentValues.Sector;
+									AssemblySchematics.Diverts[DivertIndex].SecName[0] := VirtualShReadInfo[VirtualIndex].ShuttleInfo.CurrentValues.SectorName;
+									AssemblySchematics.Diverts[DivertIndex].PosOnSec[0] := VirtualShReadInfo[VirtualIndex].ShuttleInfo.CurrentValues.Position;
+								END_IF
+								// If the shuttle is on the same segment as the divert's second segment then compare the positions
+							ELSIF (ShReadInfo.ShuttleInfo.CurrentValues.SegmentPosition.Name = AssemblySchematics.Diverts[DivertIndex].SegName[1]) THEN
+								// If the shuttles current position on the segment is within DIV_MIDPOINT_TOLERANCE of the midpoint then stop and take the measurement
+								IF (VirtualShReadInfo[VirtualIndex].ShuttleInfo.CurrentValues.SegmentPosition.Position > AssemblySchematics.Diverts[DivertIndex].DivertMid[1] - DIV_MIDPOINT_TOLERANCE) AND
+									(VirtualShReadInfo[VirtualIndex].ShuttleInfo.CurrentValues.SegmentPosition.Position < AssemblySchematics.Diverts[DivertIndex].DivertMid[1] + DIV_MIDPOINT_TOLERANCE) THEN
+									// Record the sector and position for the divert
+									AssemblySchematics.Diverts[DivertIndex].Found := TRUE;
+									AssemblySchematics.Diverts[DivertIndex].SecRef[1] := VirtualShReadInfo[VirtualIndex].ShuttleInfo.CurrentValues.Sector;
+									AssemblySchematics.Diverts[DivertIndex].SecName[1] := VirtualShReadInfo[VirtualIndex].ShuttleInfo.CurrentValues.SectorName;
+									AssemblySchematics.Diverts[DivertIndex].PosOnSec[1] := VirtualShReadInfo[VirtualIndex].ShuttleInfo.CurrentValues.Position;
+								END_IF
+							END_IF
+						END_IF
+					END_FOR
+				END_IF
+			END_FOR
+			// Write the color of the diverts every cycle
+			WriteDivertTransform(ADR(AssemblySchematics));
+			// Clear the flags
+			MoreDivertsToFind := FALSE;
+			VirtualShuttlesInMotion := FALSE;
+			// Check if there are more diverts to find
+			FOR DivertIndex:=0 TO NUM_DIVERTS DO
+				// If the entry's overlap is non-zero and a divert hasn't been found keep going
+				IF (AssemblySchematics.Diverts[DivertIndex].Overlap <> 0) AND NOT AssemblySchematics.Diverts[DivertIndex].Found THEN
+					MoreDivertsToFind := TRUE;
+					EXIT;
+				END_IF
+			END_FOR
+			// Check if virtual shuttles are still moving
+			FOR VirtualIndex:=0 TO NUM_SECTORS DO
+				// If the movement FUB is executed but not done, then a shuttle is still in motion
+				IF VirtualElasticMoveAbs[VirtualIndex].Execute AND NOT VirtualElasticMoveAbs[VirtualIndex].Done THEN
+					VirtualShuttlesInMotion := TRUE;
+					EXIT;
+				END_IF
+			END_FOR
+			// Decide how to proceed
+			IF MoreDivertsToFind AND VirtualShuttlesInMotion THEN
+				// There are diverts left to find and shuttles are still in motion. All is fine
+				(* Stay in the state *)
+			ELSIF NOT MoreDivertsToFind AND VirtualShuttlesInMotion THEN
+				// All diverts have been found, but shuttles are still in motion. Stop them, then proceed to deleting them
+				AsmStop.Execute := TRUE;
+				GatherState := GATHER_DELETE_VIRTUALS;
+			ELSIF MoreDivertsToFind AND NOT VirtualShuttlesInMotion THEN
+				// There are diverts left to find, but the shuttles have reached the end of their sectors. Raise an alarm
+				ErrorMessage := 'Some diverts could not be found. Make sure all diverts have sectors through them.';
+				GatherState := GATHER_ERROR;
+			END_IF
+			
+		GATHER_DELETE_VIRTUALS:
+			// Delete all virtual shuttles
+			AsmDeleteVirtualSh.Execute := TRUE;
+			IF AsmDeleteVirtualSh.Done THEN
+				AsmDeleteVirtualSh.Execute := FALSE;
+				(*Start moving real shuttle*)
+			END_IF
 			
 		GATHER_SHUTTLE:
-			// Get the reference of the shuttle on the trak
-			AsmGetShuttle.Enable := TRUE;
-			IF AsmGetShuttle.Valid THEN
-				AxisReference := AsmGetShuttle.Axis;
-				AsmGetShuttle.Enable := FALSE;
+			// Get the reference of the real (non-virtual) shuttle on the trak
+			AsmGetShuttleSel.AdvancedParameters.VirtualSelectionMode := mcACPTRAK_GET_SH_VIRT_NONVIRTUAL;
+			AsmGetShuttleSel.Enable := TRUE;
+			IF AsmGetShuttleSel.Valid THEN
+				AxisReference := AsmGetShuttleSel.Axis;
+				AsmGetShuttleSel.Enable := FALSE;
 				RoutedMoveAbs.Axis := ADR(AxisReference);
 				ShReadInfo.Axis := ADR(AxisReference);
 				ShReadInfo.Enable := TRUE;
@@ -252,20 +278,14 @@ PROGRAM _CYCLIC
 				GatherState := GATHER_MOVE_TO_START;
 			END_IF
 		
-		GATHER_MOVE_TO_START:
-			// ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
-			// ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
-			// ! ! !           MAKE SHUTTLE CHANGE COLOR WHEN DIVERT FOUND           ! ! !
-			// ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
-			// ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
-			
+		GATHER_MOVE_TO_START:			
 			// Move to the start of the sector at full speed
 			RoutedMoveAbs.Sector := ADR(AssemblySchematics.Sectors[SectorIndex].Reference);
 			RoutedMoveAbs.Axis := ADR(AxisReference);
 			RoutedMoveAbs.Position := 0;
-			RoutedMoveAbs.Velocity := TestVelocity;
-			RoutedMoveAbs.Acceleration := 50;
-			RoutedMoveAbs.Deceleration := 50;
+			RoutedMoveAbs.Velocity := PhysicalMotionPars.Velocity;
+			RoutedMoveAbs.Acceleration := PhysicalMotionPars.Accel;
+			RoutedMoveAbs.Deceleration := PhysicalMotionPars.Decel;
 			RoutedMoveAbs.AdvancedParameters.StartDirection := mcDIR_UNDEFINED;
 			RoutedMoveAbs.AdvancedParameters.EndDirection := mcDIR_UNDEFINED;
 			RoutedMoveAbs.AdvancedParameters.ShuttleOrientation := mcDIR_UNDEFINED;
@@ -279,9 +299,9 @@ PROGRAM _CYCLIC
 			// Move to the end of the sector in the positive direction
 			ElasticMoveAbs.Axis := ADR(AxisReference);
 			ElasticMoveAbs.Position := AssemblySchematics.Sectors[SectorIndex].Length;
-			ElasticMoveAbs.Velocity := TestVelocity;
-			ElasticMoveAbs.Acceleration := 50;
-			ElasticMoveAbs.Deceleration := 50;
+			ElasticMoveAbs.Velocity := PhysicalMotionPars.Velocity;
+			ElasticMoveAbs.Acceleration := PhysicalMotionPars.Accel;
+			ElasticMoveAbs.Deceleration := PhysicalMotionPars.Decel;
 			ElasticMoveAbs.Execute := TRUE;
 			MovingOnSec := TRUE;
 			IF ElasticMoveAbs.Active THEN
@@ -292,25 +312,26 @@ PROGRAM _CYCLIC
 			// Constantly compare the current seg position to the divert seg midpoints
 			// Execute a stop if within DIV_MIDPOINT_TOLERANCE of one
 			FOR DivertIndex:=0 TO NUM_DIVERTS DO
-				IF NOT AssemblySchematics.Diverts[DivertIndex].Measured THEN
+				IF NOT AssemblySchematics.Diverts[DivertIndex].Measurements.Measured THEN
 					// If the shuttle is on the same segment as the divert's first segment then compare the positions
 					IF (ShReadInfo.ShuttleInfo.CurrentValues.SegmentPosition.Name = AssemblySchematics.Diverts[DivertIndex].SegName[0]) THEN
 						// If the shuttles current position on the segment is within DIV_MIDPOINT_TOLERANCE of the midpoint then stop and take the measurement
 						IF (ShReadInfo.ShuttleInfo.CurrentValues.SegmentPosition.Position > AssemblySchematics.Diverts[DivertIndex].DivertMid[0] - DIV_MIDPOINT_TOLERANCE) AND
 							(ShReadInfo.ShuttleInfo.CurrentValues.SegmentPosition.Position < AssemblySchematics.Diverts[DivertIndex].DivertMid[0] + DIV_MIDPOINT_TOLERANCE) THEN
-							AssemblySchematics.Diverts[DivertIndex].Measured := TRUE;
+							// Take measurements in the divert
+							MeasureDivert(ADR(AssemblySchematics),ShReadSeg.SegmentInfo,DivertIndex);
 							ElasticMoveAbs.Execute := FALSE;
 							RoutedMoveAbs.Execute := FALSE;
 							AsmStop.Execute := TRUE;
 							// Set the transform such that the divert turns orange immediately
 							RectName.Value := DivertIndex;
 							RectName.String := INT_TO_STRING(RectName.Value);
-							brsmemset(ADR(AssemblySchematics.SvgTransform),0,SIZEOF(AssemblySchematics.SvgTransform));
+							brsmemset(ADR(AssemblySchematics.Svg.Transform),0,SIZEOF(AssemblySchematics.Svg.Transform));
 							brsmemset(ADR(NewLine),0,SIZEOF(NewLine));
 							NewLine := '[{"select":"#Div_';
 							NewLine := CONCAT(NewLine,RectName.String);
-							NewLine := CONCAT(NewLine,'","fill":1,"duration":0}]');
-							brsstrcat(ADR(AssemblySchematics.SvgTransform),ADR(NewLine));
+							NewLine := CONCAT(NewLine,'","fill":2,"duration":0}]');
+							brsstrcat(ADR(AssemblySchematics.Svg.Transform),ADR(NewLine));
 							GatherState := GATHER_ACKNOWLEDGE;
 							EXIT;
 						END_IF
@@ -319,19 +340,20 @@ PROGRAM _CYCLIC
 						// If the shuttles current position on the segment is within DIV_MIDPOINT_TOLERANCE of the midpoint then stop and take the measurement
 						IF (ShReadInfo.ShuttleInfo.CurrentValues.SegmentPosition.Position > AssemblySchematics.Diverts[DivertIndex].DivertMid[1] - DIV_MIDPOINT_TOLERANCE) AND
 							(ShReadInfo.ShuttleInfo.CurrentValues.SegmentPosition.Position < AssemblySchematics.Diverts[DivertIndex].DivertMid[1] + DIV_MIDPOINT_TOLERANCE) THEN
-							AssemblySchematics.Diverts[DivertIndex].Measured := TRUE;
+							// Take measurements in the divert
+							MeasureDivert(ADR(AssemblySchematics),ShReadSeg.SegmentInfo,DivertIndex);
 							ElasticMoveAbs.Execute := FALSE;
 							RoutedMoveAbs.Execute := FALSE;
 							AsmStop.Execute := TRUE;
 							// Set the transform such that the divert turns orange immediately
 							RectName.Value := DivertIndex;
 							RectName.String := INT_TO_STRING(RectName.Value);
-							brsmemset(ADR(AssemblySchematics.SvgTransform),0,SIZEOF(AssemblySchematics.SvgTransform));
+							brsmemset(ADR(AssemblySchematics.Svg.Transform),0,SIZEOF(AssemblySchematics.Svg.Transform));
 							brsmemset(ADR(NewLine),0,SIZEOF(NewLine));
 							NewLine := '[{"select":"#Div_';
 							NewLine := CONCAT(NewLine,RectName.String);
-							NewLine := CONCAT(NewLine,'","fill":1,"duration":0}]');
-							brsstrcat(ADR(AssemblySchematics.SvgTransform),ADR(NewLine));
+							NewLine := CONCAT(NewLine,'","fill":2,"duration":0}]');
+							brsstrcat(ADR(AssemblySchematics.Svg.Transform),ADR(NewLine));
 							GatherState := GATHER_ACKNOWLEDGE;
 							EXIT;
 						END_IF
@@ -379,7 +401,7 @@ PROGRAM _CYCLIC
 				// Check if there are anymore diverts to find
 				FOR DivertIndex:=0 TO NUM_DIVERTS DO
 					// If both segment IDs for a divert are non-zero and the divert has not been measured then more diverts need to be found
-					IF (AssemblySchematics.Diverts[DivertIndex].SegID[0] <> 0) AND (AssemblySchematics.Diverts[DivertIndex].SegID[1] <> 0) AND NOT AssemblySchematics.Diverts[DivertIndex].Measured THEN
+					IF (AssemblySchematics.Diverts[DivertIndex].SegID[0] <> 0) AND (AssemblySchematics.Diverts[DivertIndex].SegID[1] <> 0) AND NOT AssemblySchematics.Diverts[DivertIndex].Measurements.Measured THEN
 						MoreDivertsToFind := TRUE;
 						EXIT;
 					END_IF
@@ -425,20 +447,27 @@ PROGRAM _CYCLIC
 				brsmemset(ADR(ErrorMessage),0,SIZEOF(ErrorMessage));				
 				GatherState := GATHER_IDLE;
 			END_IF
-			
 				
 	END_CASE
-			
-	AsmGetSeg();
-	AsmGetSec();
+	
+	// Call FUBs
+	GatherSegs();
+	GatherSecs();
 	AsmStop();
-	SegGetInfo();
-	SecGetInfo();
-	AsmGetShuttle();
+	AsmDeleteVirtualSh();
+	AsmGetShuttleSel();
 	RoutedMoveAbs();
 	ElasticMoveAbs();
 	ShReadInfo();
 	ShReadSeg();
 	AcknowledgeTimer();
+	FOR VirtualIndex:=0 TO NUM_SECTORS DO
+		// Only call FUBs corresponding to sector entries with sector references in them
+		IF AssemblySchematics.Sectors[VirtualIndex].Reference.controlif <> 0 THEN
+			VirtualShReadInfo[VirtualIndex]();
+			VirtualElasticMoveAbs[VirtualIndex]();
+		END_IF
+	END_FOR
+	
 	
 END_PROGRAM
